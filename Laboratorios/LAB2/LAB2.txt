@@ -1,0 +1,329 @@
+ABD	
+
+LABORATORIO 2
+
+XABIER GABIÑA - Base de datos DBcoin - 35.195.82.3
+FRANCISCO GONZÁLEZ - Base de datos DBet - 35.233.35.75
+=================================================================================================================
+A) Base de datos DBcoin
+	0. Crear la base de datos y usuarios.
+		root		> 		CREATE DATABASE DBcoin;
+		root		> 		CREATE USER 'admDBcoin'@'%' identified by 'DBcoin2023';
+		root		> 		GRANT RELOAD ON *.* TO admDBcoin;
+	
+	1. Crear la tabla "Transfer" (sin definir las claves extranjeras).
+		root 		> 		GRANT CREATE ON DBcoin.* TO admDBcoin;
+		admDBcoin 	> 		CREATE TABLE Transfer(tId int, tSender int, tReceiver int, tCoin int, tDate date, PRIMARY KEY(tId));
+	
+	2. Crear las tablas "Owner" y "Coin".
+		admDBcoin 	> 		CREATE TABLE Owner(oId int, oName text, oEmail text, oBalance int, PRIMARY KEY(oId));
+		admDBcoin 	> 		CREATE TABLE Coin(cId int, cOwner int, cUnits int, cValue int, PRIMARY KEY(cId));
+	
+	3. Crear las claves extranjeras de la tabla "Transfer".
+		root 		> 		GRANT REFERENCES ON DBcoin.Owner TO admDBcoin;
+		root 		> 		GRANT REFERENCES ON DBcoin.Coin TO admDBcoin;
+		root 		> 		GRANT ALTER ON DBcoin.Transfer TO admDBcoin;
+		admDBcoin 	> 		ALTER TABLE Transfer ADD FOREIGN KEY (tSender) REFERENCES Owner(oId);
+		admDBcoin 	> 		ALTER TABLE Transfer ADD FOREIGN KEY (tReceiver) REFERENCES Owner(oId);
+		admDBcoin 	> 		ALTER TABLE Transfer ADD FOREIGN KEY (tCoin) REFERENCES Coin(cId);
+		(Creo tambien la FOREIGN KEY en Coin aunque no se especifique)
+		root 		> 		GRANT ALTER ON DBcoin.Coin TO admDBcoin;
+		admDBcoin 	> 		ALTER TABLE Coin ADD FOREIGN KEY (cOwner) REFERENCES Owner(oId);
+	
+	4. Introducir un dueño de nombre "Ripple" en la tabla "Owner".
+		root 		> 		GRANT INSERT ON DBcoin.Owner TO admDBcoin;
+		admDBcoin 	> 		INSERT INTO Owner VALUES (1, 'Ripple', 'ripple@ripple.com', 1);
+	
+	5. Introducir otro cliente de nombre "Ethereum" en la tabla "Owner".
+		admDBcoin 	> 		INSERT INTO Owner VALUES (2, 'Ethereum', 'ethereum@ethereum.com', 1);
+	
+	6. Introducir una moneda cuyo dueño sea "Ripple" en la tabla "Coin".
+		root 		> 		GRANT INSERT ON DBcoin.Coin TO admDBcoin;
+		admDBcoin 	> 		INSERT INTO Coin VALUES (1, 1, 100, 1);
+	
+	7. Introducir una moneda cuyo dueño sea "Ethereum" en la tabla "Coin".
+		admDBcoin 	> 		INSERT INTO Coin VALUES (2, 2, 100, 1);
+	
+	8. Introducir una transferencia de la primera moneda (creada en el punto 6) realizada el dia 1 de febrero de 2021 donde el emisor sea "Ethereum" y el receptor sea "Ripple".
+		root 		> 		GRANT INSERT ON DBcoin.Transfer TO admDBcoin;
+		admDBcoin 	> 		INSERT INTO Transfer VALUES (1, 1, 2, 1, '2021/02/01');
+	
+	9. Introducir una transferencia de la primera moneda (creada en el punto 6) realizada el dia 2 de febrero de 2021 donde el emisor sea "Ripple" y el receptor sea "Ethereum".
+		admDBcoin 	> 		INSERT INTO Transfer VALUES (2, 2, 1, 2, '2021/02/02');
+	
+	10. Modificar la fecha de la transferencia introducida en el punto anterior al 3 de febrero de 2021.
+		root 		> 		GRANT UPDATE, SELECT ON DBcoin.Transfer TO admDBcoin;	
+		admDBcoin 	> 		UPDATE Transfer SET tDate='2021/02/03' WHERE tDate='2021/02/02';
+
+	11. Crear los usuarios MySQL "MIser1" y "MIser2".
+		root 		> 		GRANT CREATE USER ON *.* TO admDBcoin;
+		root		>		GRANT RELOAD ON *.* TO admDBcoin WITH GRANT OPTION;
+		admDBcoin 	> 		CREATE USER 'MIser1'@'%' identified by 'DBcoin2023';
+		admDBcoin	>		GRANT RELOAD ON *.* TO MIser1;
+		admDBcoin 	> 		CREATE USER 'MIser2'@'%' identified by 'DBcoin2023';
+		admDBcoin	>		GRANT RELOAD ON *.* TO MIser2;
+		
+	
+	12. Asignar a los nuevos usuarios los siguientes permisos
+		--MIser1
+			--OWNER
+				root 		> 		GRANT SELECT(oId, oName, oEmail), INSERT(oId, oEmail, oBalance), UPDATE(oId, oEmail, oBalance) ON DBcoin.Owner TO admDBcoin WITH GRANT OPTION;
+				admDBcoin 	> 		GRANT SELECT(oId, oName, oEmail), INSERT(oId, oEmail, oBalance), UPDATE(oId, oEmail, oBalance) ON DBcoin.Owner TO MIser1;	
+		
+			--TRANSFER
+				root 		> 		GRANT SELECT(tId, tReceiver, tCoin), INSERT(tId, tReceiver, tCoin), UPDATE(tSender, tReceiver, tDate) ON DBcoin.Transfer TO admDBcoin WITH GRANT OPTION;
+				admDBcoin 	> 		GRANT SELECT(tId, tReceiver, tCoin), INSERT(tId, tReceiver, tCoin), UPDATE(tSender, tReceiver, tDate) ON DBcoin.Transfer TO MIser1;
+				
+			--COIN
+				root 		> 		GRANT SELECT, INSERT, UPDATE(cId, cOwner, cUnits) ON DBcoin.Coin TO admDBcoin WITH GRANT OPTION;
+				admDBcoin 	> 		GRANT SELECT, INSERT, UPDATE(cId, cOwner, cUnits) ON DBcoin.Coin TO MIser1;
+				
+			--UNSPECIFIED
+				root		>		GRANT CREATE VIEW, CREATE ROUTINE ON DBcoin.* TO admDBcoin;
+				root		>		GRANT EXECUTE ON DBcoin.* TO admDBcoin WITH GRANT OPTION;
+				--Consultar el identificador y el nombre de los dueños con balance negativo.
+					root 		> 		GRANT SELECT(oBalance) ON DBcoin.Owner TO admDBcoin WITH GRANT OPTION;
+					admDBcoin	>		CREATE VIEW Vista1 AS SELECT oId, oName from Owner WHERE oBalance<0;
+					root		>		GRANT SELECT ON DBcoin.Vista1 TO admDBcoin WITH GRANT OPTION;
+					admDBcoin	>		GRANT SELECT ON DBcoin.Vista1 TO MIser1;
+										GRANT SELECT(oBalance) ON DBcoin.Owner TO MIser1;
+					MIser1		>		SELECT * FROM Vista1;
+
+				--Consultar el identificador de una transferencia y los nombres del emisor y del receptor.
+					root		>		GRANT SELECT (tSender) ON DBcoin.Transfer TO admDBcoin WITH GRANT OPTION;
+					admDBcoin	>		CREATE VIEW Vista2 AS SELECT t.tId as "Transfer ID", o1.oName as Sender, o2.oName as Receiver FROM Transfer t JOIN Owner o1 ON t.tSender=o1.oId JOIN Owner o2 ON t.tReceiver=o2.oId;
+					root		>		GRANT SELECT ON DBcoin.Vista2 TO admDBcoin WITH GRANT OPTION;
+					admDBcoin	>		GRANT SELECT ON DBcoin.Vista2 TO MIser1;
+										GRANT SELECT (tSender) ON DBcoin.Transfer TO MIser1;
+					MIser1		>		SELECT * FROM Vista2;
+
+				--Dado el identificador de un dueño, modificar su balance con un limite del 10%
+					admDBcoin	>		DELIMITER //
+										CREATE PROCEDURE Rutina1(IN Id INT, IN Balance INT)
+										BEGIN
+											DECLARE current_balance INT;
+	  
+											SELECT oBalance INTO current_balance FROM Owner WHERE oId = Id;
+	  
+											IF (Balance <= current_balance * 1.1) THEN
+													UPDATE Owner SET oBalance = Balance WHERE oId = Id;
+											END IF;
+										END //
+										DELIMITER ;
+										GRANT EXECUTE ON PROCEDURE DBcoin.Rutina1 TO MIser1;
+					MIser1		>		CALL Rutina1(1, 1000);
+
+				--Dado el identificador de un dueño modificar su balance
+					admDBcoin	>		DELIMITER //
+										CREATE PROCEDURE Rutina2(IN Id INT, IN Balance INT)
+										BEGIN
+											UPDATE Owner SET oBalance=Balance WHERE oId=Id;
+										END //
+										DELIMITER ;
+										GRANT EXECUTE ON PROCEDURE DBcoin.Rutina2 TO MIser1;
+					MIser1		>		CALL Rutina2(1, 1000);
+					
+		--MIser2
+			--OWNER
+				root		>		GRANT SELECT(oBalance), INSERT(oName), UPDATE(oName) ON DBcoin.Owner TO admDBcoin WITH GRANT OPTION;
+				admDBcoin 	> 		GRANT SELECT(oId, oEmail, oBalance), INSERT(oId, oName), UPDATE(oId, oName) ON DBcoin.Owner TO MIser2;
+
+			--TRANSFER
+				root		>		GRANT SELECT(tSender, tDate), INSERT(tSender), UPDATE(tId, tCoin) ON DBcoin.Transfer TO admDBcoin WITH GRANT OPTION;
+				admDBcoin 	> 		GRANT SELECT(tId, tSender, tReceiver, tDAte), INSERT(tId, tSender, tReceiver), UPDATE ON DBcoin.Transfer TO MIser2;
+
+			--COIN
+				root		>		GRANT UPDATE(cValue) ON DBcoin.Coin TO admDBcoin WITH GRANT OPTION;
+				admDBcoin 	> 		GRANT SELECT(cUnits, cValue), INSERT(cOwner, cValue), UPDATE(cUnits, cValue) ON DBcoin.Coin TO MIser2;
+
+			--UNSPECIFIED
+				--Consultar el identificador, el dueño y el valor de una moneda.
+					root 		> 		GRANT SELECT(cId, cOwner) ON DBcoin.Coin TO admDBcoin WITH GRANT OPTION;
+					admDBcoin	>		CREATE VIEW Vista3 AS SELECT cId, cOwner, cValue FROM Coin;
+					root		>		GRANT SELECT ON DBcoin.Vista3 TO admDBcoin WITH GRANT OPTION;
+					admDBcoin	>		GRANT SELECT ON DBcoin.Vista3 TO MIser2;
+										GRANT SELECT(cId, cOwner) ON DBcoin.Coin TO MIser2;
+					MIser2		>		SELECT * FROM Vista3;
+				--Consultar el identificador, el emisor y el receptor de las transferencias del año 2020
+					root		>		N/A
+					admDBcoin	>		CREATE VIEW Vista4 AS SELECT tId, tSender, tReceiver from Transfer WHERE YEAR(tDate)=2020;
+					root		>		GRANT SELECT ON DBcoin.Vista4 TO admDBcoin WITH GRANT OPTION;
+					admDBcoin	>		GRANT SELECT ON DBcoin.Vista4 TO MIser2;
+					MIser2		>		SELECT * FROM Vista4;
+				--Dado el identificador de una moneda, modificar su numero de unidades;
+					admDBcoin	>		DELIMITER //
+										CREATE PROCEDURE Rutina3(IN Id INT, IN Units INT)
+										BEGIN
+											UPDATE Coin SET cUnits=Units WHERE cId=Id;
+										END //
+										DELIMITER ;
+										GRANT EXECUTE ON PROCEDURE DBcoin.Rutina3 TO MIser2;
+					MIser2		>		CALL Rutina3(1,4);
+				--Dado el identificador de una moneda, modificar su numero de unidades de aquellas cuyo valor es menor que 5.
+					admDBcoin	>		DELIMITER //
+										CREATE PROCEDURE Rutina4(IN Id INT, IN Units INT)
+										BEGIN
+											UPDATE Coin SET cUnits=Units WHERE cId=Id AND cValue<5;
+										END //
+										DELIMITER ;
+										GRANT EXECUTE ON PROCEDURE DBcoin.Rutina4 TO MIser2;
+					MIser2		>		CALL Rutina4(1, 200);
+
+=================================================================================================================
+B) Base de datos DBet
+	0. Crear la base de datos y usuarios.
+		root 		> 		CREATE DATABASE DBet;
+		root 		> 		CREATE USER 'admDBet'@'%' identified by 'DBet2023';
+		root 		> 		GRANT RELOAD ON *.* TO admDBet;
+
+	1. Crear la tabla "Bet" (sin definir las claves extranjeras).
+		root 		> 		GRANT CREATE ON DBet.* TO admDBet;
+		admDBet 	> 		CREATE TABLE Bet(bId int, bGambler int, bEvent int, bAmount int, bResult text, PRIMARY KEY(bId));
+	
+	2. Crear las tablas "Gambler" y "Event".
+		admDBet 	> 		CREATE TABLE Gambler(gId int, gName text, gEmail text, gCredit int, PRIMARY KEY(gId));
+		admDBet 	> 		CREATE TABLE Event(eId int, eName text, eDate date, eResult text, PRIMARY KEY(eId));
+
+	3. Crear las claves extranjeras de la tabla "Bet".
+		root 		> 		GRANT REFERENCES ON DBet.Gambler TO admDBet;
+		root 		> 		GRANT REFERENCES ON DBet.Event TO admDBet;
+		root 		> 		GRANT ALTER ON DBet.Bet TO admDBet;
+		admDBet 	> 		ALTER TABLE Bet ADD FOREIGN KEY (bGambler) REFERENCES Gambler(gId);
+		admDBet 	> 		ALTER TABLE Bet ADD FOREIGN KEY (bEvent) REFERENCES Event(eId);
+
+	4. Introducir un apostante de nombre "MacBeth" en la tabla "Gambler".
+		root 		> 		GRANT INSERT ON DBet.Gambler TO admDBet;
+		admDBet 	> 		INSERT INTO Gambler VALUES (1, 'MacBeth', 'macbeth@macbeth.com', 1);
+
+	5. Introducir otro apostante de nombre "Betty" en la tabla "Gambler".
+		admDBet 	> 		INSERT INTO Gambler VALUES (2, 'Betty', 'betty@betty.com', 1);
+
+	6. Introducir un evento de nombre "SnailRace" y fecha 1 de febrero de 2021 en la tabla "Event".
+		root 		> 		GRANT INSERT ON DBet.Event TO admDBet;
+		admDBet 	> 		INSERT INTO Event VALUES (1, 'SnailRace', '2021/02/01', 'Win');
+
+	7. Introducir otro evento de nombre "CaterpillarFight" y fecha 2 de febrero de 2021 en la tabla "Event".
+		admDBet 	> 		INSERT INTO Event VALUES (2, 'CaterpillarFight', '2021/02/02', 'Lose');
+
+	8. Introducir una apuesta de "MacBeth" para el evento "SnailRace" donde el resultado sea "Turbowinds".
+		root 		> 		GRANT INSERT ON DBet.Bet TO admDBet;
+		admDBet 	> 		INSERT INTO Bet VALUES (1, 1, 1, 1, 'Turbowinds');
+
+	9. Introducir una apuesta de "Betty" para el event "CaterpillarFight" donde el resultado sea "Butterlfly loses".
+		admDBet 	> 		INSERT INTO Bet VALUES (2, 2, 2, 1, 'Butterlfly loses');
+
+	10. Modificar la fecha del evento "SnailRace" el 3 de febrero de 2021
+		root 		> 		GRANT UPDATE, SELECT ON DBet.Event TO admDBet;	
+		admDBet 	> 		UPDATE Event SET eDate='2021/02/03' WHERE eName='SnailRace';
+
+	11. Crear los usuarios MySQL "LUser1" y "LUser2".
+		root 		> 		GRANT CREATE USER ON *.* TO admDBet;
+		root		>		GRANT RELOAD ON *.* TO admDBet WITH GRANT OPTION;
+		admDBet 	> 		CREATE USER 'LUser1'@'%' identified by 'DBet2023';
+		admDBet		>		GRANT RELOAD ON *.* TO LUser1;
+		admDBet 	> 		CREATE USER 'LUser2'@'%' identified by 'DBet2023';
+		admDBet		>		GRANT RELOAD ON *.* TO LUser2;
+
+	12. Asignar a los nuevos usuarios los permisos que se indican en la siguiente tabla.
+		--LUser1		
+			--GAMBLER
+				root 		> 		GRANT SELECT(gEmail), INSERT(gName, gCredit), UPDATE(gName, gEmail, gCredit) ON DBet.Gambler TO admDBet WITH GRANT OPTION;
+				admDBet 	>  		GRANT SELECT(gEmail), INSERT(gName, gCredit), UPDATE(gName, gEmail, gCredit) ON DBet.Gambler TO LUser1;
+				
+			--BET		
+				root		> 		GRANT SELECT(bId, bGambler, bAmount, bResult), INSERT, UPDATE ON DBet.Bet TO admDBet WITH GRANT OPTION;
+				admDBet 	>  		GRANT SELECT(bId, bGambler, bAmount, bResult), INSERT, UPDATE ON DBet.Bet TO LUser1;
+				
+			--EVENT
+				root 		> 		GRANT SELECT(eId, eDate), INSERT(eId, eName, eDate), UPDATE(eId, eName) ON DBet.Event TO admDBet WITH GRANT OPTION;
+				admDBet 	> 		GRANT SELECT(eId, eDate), INSERT(eId, eName, eDate), UPDATE(eId, eName) ON DBet.Event TO LUser1;
+				
+			--UNSPECIFIED
+				root		>		GRANT CREATE VIEW, CREATE ROUTINE ON DBet.* TO admDBet;
+				root		>		GRANT EXECUTE ON DBet.* TO admDBet WITH GRANT OPTION;
+				--Consultar el identificador y el credito de los apostadores.
+					root		>		GRANT SELECT(gId, gCredit) ON DBet.Gambler TO admDBet WITH GRANT OPTION;
+					admDBet		>		CREATE VIEW Vista1 AS SELECT gId, gCredit from Gambler;
+					root		>		GRANT SELECT ON DBet.Vista1 TO admDBet WITH GRANT OPTION;
+					admDBet		>		GRANT SELECT ON DBet.Vista1 TO LUser1;
+										GRANT SELECT(gId, gCredit) ON DBet.Gambler TO LUser1;
+					LUser1		>		SELECT * FROM Vista1;
+					
+				--Consultar el identificador y el evento de las apuestas ganadoras.
+					root		>		GRANT SELECT(bEvent) ON DBet.Bet TO admDBet WITH GRANT OPTION;
+					admDBet		>		CREATE VIEW Vista2 AS SELECT bId, bEvent from Bet WHERE bResult LIKE '*win*';
+					root		>		GRANT SELECT ON DBet.Vista2 TO admDBet WITH GRANT OPTION;
+					admDBet		>		GRANT SELECT ON DBet.Vista2 TO LUser1;
+										GRANT SELECT(bEvent) ON DBet.Bet TO LUser1;
+					LUser1		>		SELECT * FROM Vista2;
+					
+				--Dado el identificador de un evento, actualizar la fecha de los eventos que aun no se hayan celebrado.
+					admDBet		>		DELIMITER //
+										CREATE PROCEDURE Rutina1(IN Id INT, IN fecha DATE)
+										BEGIN
+											UPDATE Event SET eDate=fecha WHERE eDate>NOW() && eId=Id;
+										END //
+										DELIMITER ;
+										GRANT EXECUTE ON PROCEDURE DBet.Rutina1 TO LUser1;
+					LUser1		>		CALL Rutina1(1,'2021/02/03');
+				
+				--Dado el identificador de una apuesta, actualizar su importe si el evento aun no se han disputado.
+					admDBet		>		DELIMITER //
+										CREATE PROCEDURE Rutina2(IN Id INT, IN IMP INT)
+										BEGIN
+											UPDATE Bet SET bAmount=IMP WHERE bId=Id AND (SELECT eDate FROM Event WHERE eId=bEvent)>NOW();
+										END //
+										DELIMITER ;
+										GRANT EXECUTE ON PROCEDURE DBet.Rutina2 TO LUser1;
+					LUser1		>		CALL Rutina2(1,1);
+
+		--LUser2
+			--GAMBLER
+				root		> 		GRANT SELECT(gId, gCredit), INSERT(gId,gEmail), UPDATE(gId) ON DBet.Gambler TO admDBet WITH GRANT OPTION;
+				admDBet 	>  		GRANT SELECT(gId, gCredit), INSERT, UPDATE(gId, gName, gCredit) ON DBet.Gambler TO LUser2;
+				
+			--BET
+				root 		> 		GRANT SELECT(bEvent) ON DBet.Bet TO admDBet WITH GRANT OPTION;
+				admDBet 	>  		GRANT SELECT(bGambler, bEvent, bResult), INSERT(bGambler, bEvent, bAmount), UPDATE(bId, bGambler, bEvent) ON DBet.Bet TO LUser2;
+				
+			--EVENT
+				root 		> 		GRANT SELECT(eName), UPDATE(eDate, eResult) ON DBet.Event TO admDBet WITH GRANT OPTION;
+				admDBet 	> 		GRANT SELECT(eName, eDate), INSERT(eId, eName, eDate), UPDATE ON DBet.Event TO LUser2;
+				
+			--UNSPECIFIED
+				--Consultar el identificador y el nombre de los apostadores que hayan apostado durante el año 2021.
+					root		>		GRANT SELECT(gName) ON DBet.Gambler TO admDBet WITH GRANT OPTION;
+					admDBet		>		CREATE VIEW Vista3 AS select gId, gName, eDate from Gambler join Event WHERE YEAR(eDate)=2021;
+					root		>		GRANT SELECT ON DBet.Vista3 TO admDBet WITH GRANT OPTION;
+					admDBet		>		GRANT SELECT ON DBet.Vista3 TO LUser2;
+										GRANT SELECT(gName) ON DBet.Gambler TO LUser2;
+					LUser2		>		SELECT * FROM Vista3;
+					
+				--Consultar el identificador, el evento y el importe de las apuestas de hoy.
+					root		>		GRANT SELECT(eId) ON DBet.Event TO admDBet WITH GRANT OPTION;
+										GRANT SELECT(bAmount) ON DBet.Bet TO admDBet WITH GRANT OPTION;
+					admDBet		>		CREATE VIEW Vista4 AS select eId, eName, bAmount from Event inner join Bet ON eId=bEvent WHERE eDate=NOW();
+					root		>		GRANT SELECT ON DBet.Vista4 TO admDBet WITH GRANT OPTION;
+					admBet		>		GRANT SELECT ON DBet.Vista4 TO LUser2;
+										GRANT SELECT(eId) ON DBet.Event TO LUser2;
+										GRANT SELECT(bAmount) ON DBet.Bet TO LUser2;	
+					LUser2		>		SELECT * FROM Vista4;
+				--Dado el identificador de una apuesta, doblar su importe si el apostador tiene credito suficientes.
+					admBet		>		DELIMITER //
+										CREATE PROCEDURE Rutina3(IN Id INT)
+										BEGIN
+											UPDATE Bet SET bAmount=bAmount*2 WHERE (SELECT gCredit from Gambler where gId=Id)>=bAmount*2;
+										END //
+										DELIMITER ;
+										GRANT EXECUTE ON PROCEDURE DBet.Rutina3 TO LUser2;
+					LUser2		>		CALL Rutina3(1);
+				--Dado el identificador de una apuesta, actualizar el importe.
+					admBet		>		DELIMITER //
+										CREATE PROCEDURE Rutina4(IN Id INT, IN Imp INT)
+										BEGIN
+											UPDATE Bet SET bAmount=Imp WHERE bId=Id;
+										END //
+										DELIMITER ;
+										GRANT EXECUTE ON PROCEDURE DBet.Rutina4 TO LUser2;
+					LUser2		>		CALL Rutina4(1, 1);
+				

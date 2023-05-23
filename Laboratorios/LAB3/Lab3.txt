@@ -1,0 +1,81 @@
+ABD
+
+LABORATORIO 3
+
+XABIER GABIÑA - TAREA AB - 35.195.82.3
+FRANCISCO GONZALEZ - TAREA CD - 35.233.35.75
+=================================================================================================================
+--Tarea AB
+	--a) Utilizando el usuario root y en tu propio servidor de base de datos:
+		--1. Crea la base de datos auditingAB.
+			root	>	create database auditingAB;
+		
+		--2. Crea el usuario auditorAB para que sea utilizado por vuestro compañero de grupo y asignale permisos Create,Insert,Index y Select a nivel de sistema.
+			root	>	create user 'auditorAB'@'%' identified by 'auditorAB2023';
+			root	> 	GRANT CREATE, INSERT, INDEX, SELECT ON auditingAB.* TO auditorAB;
+	
+	--b) Utilizando el usuario auditorAB que vuetro compañero os ha creado
+		--1. Utiliza sysbench (bien desde tu instancia GCP o desde tu equipo local si tiene Linux) para crear 2 tablas con 10.000 filas en la base de datos auditingAB.
+			sysbench --db-driver=mysql --mysql-db=auditingAB --mysql-user=auditorAB --mysql-password=auditorAB2023 --mysql-host=127.0.0.1 --mysql-port=3306 --tables=2 --table-size=10000 /usr/share/sysbench/oltp_read_write.lua prepare
+		
+		--2. Ejecuta las siguientes consultas:
+			select count(*) from sbtest1 inner join sbtest2 on sbtest1.k = sbtest2.k;
+				767766
+			select min(sbtest1.k) from sbtest1 inner join sbtest2 on sbtest1.k = sbtest2.k;
+				2966
+		
+		--3. Pídele a tu compañero/a que compruebe si las consultas anteriores se han registrado
+			--correctamente en cada uno de los log que hemos visto, incluyendo el generado por el plugin
+			--de Percona. Si las consultas del paso b.2 no se han registrado en el diario
+			--slow_queries, pídele a tu compañero que elimine las tablas “sbtest”. Después, utiliza
+			--sysbench para crear nuevas tablas pero con un mayor número de filas. Repite este paso hasta
+			--que haya suficientes filas como para que las consultas del paso d.2 se registren en
+			--slow_queries.
+				# Time: 2023-02-11T15:22:00.756819Z
+				# User@Host: auditorAB[auditorAB] @  [95.22.253.0]  Id:   447
+				# Query_time: 23.034065  Lock_time: 0.000007 Rows_sent: 1  Rows_examined: 78046757
+				use auditingAB;
+				SET timestamp=1676128897;
+				select count(*) from sbtest1 inner join sbtest2 on sbtest1.k = sbtest2.k;
+				# Time: 2023-02-11T15:22:34.784525Z
+				# User@Host: auditorAB[auditorAB] @  [95.22.253.0]  Id:   447
+				# Query_time: 24.022726  Lock_time: 0.000006 Rows_sent: 1  Rows_examined: 78046757
+				SET timestamp=1676128930;
+				select min(sbtest1.k) from sbtest1 inner join sbtest2 on sbtest1.k = sbtest2.k;
+
+=================================================================================================================			
+--Tarea CD
+	--c) Utilizando el usuario root y en tu propio servidor de base de datos:
+		--1. Crea la base de datos auditingCD
+			root	>	create database auditingCD;
+		--2. Crea el usuario auditorCD para que sea utilizado por vuestro compañero de grupo y asignale permisos Create, Insert, Index y Select a nivel de sistema.
+			root	>	create user 'auditorCD'@'%' identified by 'auditorCD2023';
+			root	> 	GRANT CREATE, INSERT, INDEX, SELECT ON auditingCD.* TO auditorCD;
+	--d) Utilizando el usuario auditorCD que vuestro compañero os ha creado:
+		--1. Utiliza sysbench(bien desde tu instancia GCP o desde tu equipo local si tienes Linux) para crear 2 tablas con 10.000 filas en la base de datos auditingCD.
+			bash	>	sysbench --db-driver=mysql --mysql-db=auditingCD --mysql-user=auditorCD --mysql-password=auditorCD2023 --mysql-host=127.0.0.1 --mysql-port=3306 --tables=2 --table-size=10000 /usr/share/sysbench/oltp_read_write.lua prepare
+		--2. Ejectua las siguientes consultas:
+			auditorCD	>	select count(*) from sbtest2 inner join sbtest1 on sbtest2.k = sbtest1.k;
+				767766
+			auditorCD	>	select min(sbtest2.k) from sbtest2 inner join sbtest1 on sbtest2.k = sbtest1.k;
+				2966
+		--3. Pídele a tu compañero/a que compruebe si las consultas anteriores se han registrado
+			--correctamente en cada uno de los log que hemos visto, incluyendo el generado por el plugin
+			--de Percona. Si las consultas del paso b.2 no se han registrado en el diario
+			--slow_queries, pídele a tu compañero que elimine las tablas “sbtest”. Después, utiliza
+			--sysbench para crear nuevas tablas pero con un mayor número de filas. Repite este paso hasta
+			--que haya suficientes filas como para que las consultas del paso d.2 se registren en
+			--slow_queries.
+				# Time: 2023-02-11T15:33:00.202220Z
+				# User@Host: auditorCD[auditorCD] @  [88.14.6.187]  Id:   451
+				# Query_time: 23.090626  Lock_time: 0.000006 Rows_sent: 1  Rows_examined: 78046757
+				use auditingCD;
+				SET timestamp=1676129557;
+				select count(*) from sbtest2 inner join sbtest1 on sbtest2.k = sbtest1.k;
+				# Time: 2023-02-11T15:33:42.871532Z
+				# User@Host: auditorCD[auditorCD] @  [88.14.6.187]  Id:   451
+				# Query_time: 23.917218  Lock_time: 0.000006 Rows_sent: 1  Rows_examined: 78046757
+				SET timestamp=1676129598;
+				select min(sbtest2.k) from sbtest2 inner join sbtest1 on sbtest2.k = sbtest1.k;
+
+			

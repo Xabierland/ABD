@@ -1,0 +1,288 @@
+Ejercicio 1
+=============================================================================================================================================================================
+* Crear las colecciones
+cine> db.peliculas.insertMany([ { nombre: "Her", anno: 2013 }, { nombre: "Joker", anno: 2019 }, { nombre: "Judy", anno: 2019 }])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId("64464e4041f3ec2587f797e6"),
+    '1': ObjectId("64464e4041f3ec2587f797e7"),
+    '2': ObjectId("64464e4041f3ec2587f797e8")
+  }
+}
+
+cine> db.actores.insertMany([{nombre:"Joaquin Phoenix", edad:12},{nombre:"Renee Zellweger", edad:53},{nombre:"Keanu Reeves", edad:58}])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId("64464ed641f3ec2587f797e9"),
+    '1': ObjectId("64464ed641f3ec2587f797ea"),
+    '2': ObjectId("64464ed641f3ec2587f797eb")
+  }
+}
+
+*Modificar la edad de Joaquin Phoenix a 48 años.
+cine> db.actores.updateOne({nombre:"Joaquin Phoenix"}, {$set: {edad:48}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+*Eliminar a Keanu Reeves de la coleccion "actores".
+cine> db.actores.deleteOne({nombre:"Keanu Reeves"})
+{ acknowledged: true, deletedCount: 1 }
+
+*Añadir el siguiente documento a la coleccion "peliculas":
+cine> db.peliculas.insertOne({nombre:"Avatar",anno:2009,nota:7.2})
+{
+  acknowledged: true,
+  insertedId: ObjectId("6446510a41f3ec2587f797ec")
+}
+
+*Mostrar unicamente a los nombres de las peliculas estrenadas a partir de 2015
+cine> db.peliculas.find({anno: {$gte: 2015}}, {nombre:1, _id:0})
+[ { nombre: 'Joker' }, { nombre: 'Judy' } ]
+=============================================================================================================================================================================
+Ejercicio 2
+=============================================================================================================================================================================
+cine> db.actores.updateOne({nombre:"Renee Zellweger"},{$set: {premios:[{nombre:"Oscar a la mejor actriz",anno:2020},{nombre:"Globo de oro a la mejor actriz", anno:2020}]}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+cine> db.actores.updateOne({nombre:"Joaquin Phoenix"},{$set: {premios:[{nombre:"Oscar al mejor actor",anno:2020}]}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+cine> db.actores.updateOne({nombre:"Joaquin Phoenix"},{$set:{participa:[{pelicula:"Her"},{pelicula:"Joker"}]}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+cine> db.actores.updateOne({nombre:"Renee Zellweger"},{$set:{participa:[{pelicula:"Judy"}]}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+cine> db.actores.aggregate([{ $lookup: {from:"peliculas", localField:"nombre", foreignField:"pelicula" ,as: "DatosPelis"}}])
+=============================================================================================================================================================================
+Ejercicio 3
+=============================================================================================================================================================================
+cine> db.createCollection("salas", {
+validator:{
+$jsonSchema:{
+bsonType: "object",
+required: [ "nombre" , "poblacion" , "capacidad" ],
+properties: {
+nombre: { bsonType: "string" },
+poblacion: { bsonType: "string" },
+capacidad: {bsonType: "int", minimum:150 }
+},
+validationLevel: 'moderate',
+validationAction: 'error'
+})
+cine> db.salas.insertMany([
+... {nombre:'Yelmo Megapark', poblacion:'Barakaldo', capacidad:500},
+... {nombre:'Autocine', poblacion:'Getxo', capacidad:100},
+... {nombre:'Zubiarte', poblacion:'Bilbao', capacidad:250}])
+Uncaught:
+MongoBulkWriteError: Document failed validation
+Result: BulkWriteResult {
+  insertedCount: 1,
+  matchedCount: 0,
+  modifiedCount: 0,
+  deletedCount: 0,
+  upsertedCount: 0,
+  upsertedIds: {},
+  insertedIds: {
+    '0': ObjectId("64478fe266fbf70430ddbb08"),
+    '1': ObjectId("64478fe266fbf70430ddbb09"),
+    '2': ObjectId("64478fe266fbf70430ddbb0a")
+  }
+}
+Write Errors: [
+  WriteError {
+    err: {
+      index: 1,
+      code: 121,
+      errmsg: 'Document failed validation',
+      errInfo: {
+        failingDocumentId: ObjectId("64478fe266fbf70430ddbb09"),
+        details: {
+          operatorName: '$jsonSchema',
+          schemaRulesNotSatisfied: [
+            {
+              operatorName: 'properties',
+              propertiesNotSatisfied: [Array]
+            }
+          ]
+        }
+      },
+      op: {
+        nombre: 'Autocine',
+        poblacion: 'Getxo',
+        capacidad: 100,
+        _id: ObjectId("64478fe266fbf70430ddbb09")
+      }
+    }
+  }
+]
+cine> db.salas.find()
+[
+  {
+    _id: ObjectId("64478fe266fbf70430ddbb08"),
+    nombre: 'Yelmo Megapark',
+    poblacion: 'Barakaldo',
+    capacidad: 500
+  }
+]
+=============================================================================================================================================================================
+Ejercicio 1
+=============================================================================================================================================================================
+xabier@abd:~/BasesDeDatos/mongoDB/ej1$ mongoimport listingsAndReviews.json -d airbnb -c airbnb
+2023-04-25T08:41:17.011+0000    connected to: mongodb://localhost/
+2023-04-25T08:41:20.022+0000    [##########..............] airbnb.airbnb        40.7MB/95.0MB (42.8%)
+2023-04-25T08:41:23.014+0000    [###################.....] airbnb.airbnb        78.0MB/95.0MB (82.0%)
+2023-04-25T08:41:24.769+0000    [########################] airbnb.airbnb        95.0MB/95.0MB (100.0%)
+2023-04-25T08:41:24.769+0000    5555 document(s) imported successfully. 0 document(s) failed to import.
+
+airbnb> db.airbnb.find({"review_scores.review_scores_rating":{$gte:90}})
+
+airbnb> db.airbnb.find({"reviews.comments":{$regex:"awesome"}})
+
+airbnb> db.airbnb.explain("executionStats").find({"review_scores.review_scores_rating":{$gte:90}})
+executionStats: {
+    executionSuccess: true,
+    nReturned: 3237,
+    executionTimeMillis: 15,
+    totalKeysExamined: 0,
+    totalDocsExamined: 5555,
+    executionStages: {
+      stage: 'COLLSCAN',
+      filter: { 'review_scores.review_scores_rating': { '$gte': 90 } },
+      nReturned: 3237,
+      executionTimeMillisEstimate: 1,
+      works: 5557,
+      advanced: 3237,
+      needTime: 2319,
+      needYield: 0,
+      saveState: 5,
+      restoreState: 5,
+      isEOF: 1,
+      direction: 'forward',
+      docsExamined: 5555
+    }
+
+airbnb> db.airbnb.explain("executionStats").find({"reviews.comments":{$regex:"awesome"}})
+executionStats: {
+    executionSuccess: true,
+    nReturned: 1316,
+    executionTimeMillis: 141,
+    totalKeysExamined: 0,
+    totalDocsExamined: 5555,
+    executionStages: {
+      stage: 'COLLSCAN',
+      filter: { 'reviews.comments': { '$regex': 'awesome' } },
+      nReturned: 1316,
+      executionTimeMillisEstimate: 129,
+      works: 5557,
+      advanced: 1316,
+      needTime: 4240,
+      needYield: 0,
+      saveState: 8,
+      restoreState: 8,
+      isEOF: 1,
+      direction: 'forward',
+      docsExamined: 5555
+    }
+	
+airbnb> db.airbnb.createIndex({ "review_scores.review_scores_rating":1 })
+airbnb> db.airbnb.explain("executionStats").find({"review_scores.review_scores_rating":{$gte:90}})
+executionStats: {
+    executionSuccess: true,
+    nReturned: 3237,
+    executionTimeMillis: 7,
+    totalKeysExamined: 3237,
+    totalDocsExamined: 3237,
+    executionStages: {
+      stage: 'FETCH',
+      nReturned: 3237,
+      executionTimeMillisEstimate: 0,
+      works: 3238,
+      advanced: 3237,
+      needTime: 0,
+      needYield: 0,
+      saveState: 3,
+      restoreState: 3,
+      isEOF: 1,
+      docsExamined: 3237,
+      alreadyHasObj: 0,
+      inputStage: {
+        stage: 'IXSCAN',
+        nReturned: 3237,
+        executionTimeMillisEstimate: 0,
+        works: 3238,
+        advanced: 3237,
+        needTime: 0,
+        needYield: 0,
+        saveState: 3,
+        restoreState: 3,
+        isEOF: 1,
+        keyPattern: { 'review_scores.review_scores_rating': 1 },
+        indexName: 'review_scores.review_scores_rating_1',
+        isMultiKey: false,
+        multiKeyPaths: { 'review_scores.review_scores_rating': [] },
+        isUnique: false,
+        isSparse: false,
+        isPartial: false,
+        indexVersion: 2,
+        direction: 'forward',
+        indexBounds: { 'review_scores.review_scores_rating': [ '[90, inf.0]' ] },
+        keysExamined: 3237,
+        seeks: 1,
+        dupsTested: 0,
+        dupsDropped: 0
+      }
+
+airbnb> db.airbnb.createIndex({ "reviews.comments":"text" })
+executionStats: {
+    executionSuccess: true,
+    nReturned: 1316,
+    executionTimeMillis: 139,
+    totalKeysExamined: 0,
+    totalDocsExamined: 5555,
+    executionStages: {
+      stage: 'COLLSCAN',
+      filter: { 'reviews.comments': { '$regex': 'awesome' } },
+      nReturned: 1316,
+      executionTimeMillisEstimate: 119,
+      works: 5557,
+      advanced: 1316,
+      needTime: 4240,
+      needYield: 0,
+      saveState: 7,
+      restoreState: 7,
+      isEOF: 1,
+      direction: 'forward',
+      docsExamined: 5555
+    }

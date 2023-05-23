@@ -1,0 +1,28 @@
+EJERCICIO 2
+===========================================================================================
+SELECT's
+EXPLAIN ANALYZE
+1)
+SELECT country.name as "Pais", countrylanguage.percentage as "Porcentaje de hablantes de ingles" FROM country inner join countrylanguage on countrylanguage.countrycode=country.code WHERE countrylanguage.language like "English" AND countrylanguage.percentage>=50.0 ORDER BY countrylanguage.percentage DESC;
+
+2)
+SELECT country.name, country.lifeexpectancy , countrylanguage.language FROM country inner join countrylanguage on country.code=countrylanguage.countrycode WHERE country.lifeexpectancy>=80.0 ORDER BY country.lifeexpectancy DESC;
+
+3)
+SELECT country.name, city.name, city.population FROM country inner join city on city.countrycode=country.code WHERE id!=capital ORDER BY country.population DESC LIMIT 10;
+===========================================================================================
+INDEX's
+1)
+	alter table countrylanguage add index idx_language (language);
+2)
+	alter table country add index idx_lifeexpectancy (lifeexpectancy);
+3)
+	alter table country add index idx_population (population);
+===========================================================================================
+TIME's
+
+		CONSULTA				   COSTE
+					SIN INDICES			CON INDICES
+		Consulta 1		   207.41 			    38.26			
+		Consulta 2		   148.50			     6.00
+		Consulta 3		  1526.70			  1041.13

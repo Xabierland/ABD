@@ -1,0 +1,11 @@
+Copiar la base de datos Sakila desde el SGBD de Xabier[35.195.82.3] a Fran[35.233.35.75]
+	xabier@abd:~$ mysqldump -u root -pxabier2001 --databases sakila --single-transaction --events | ssh -i /home/xabier/.ssh/id_rsa xabier@35.233.35.75 mysql -uroot -pHola@1234
+	mysqldump: [Warning] Using a password on the command line interface can be insecure.
+	mysql: [Warning] Using a password on the command line interface can be insecure.
+	
+================================================================================================================================================================================================
+	
+Copiar la base de datos Sakila desde el SGBD de Fran[35.233.35.75] a Xabier[35.195.82.3]
+	francisco@instance-2:~$ mysqldump -u root -pHola@1234 --databases sakila --single-transaction --events | ssh -i /home/francisco/.ssh/id_rsa francisco@35.195.82.3 mysql -uroot -pxabier2001
+	mysqldump: [Warning] Using a password on the command line interface can be insecure.
+	mysql: [Warning] Using a password on the command line interface can be insecure.

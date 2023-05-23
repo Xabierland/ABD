@@ -1,0 +1,383 @@
+#PROCEDURE A
+
+BEGIN
+#Parametros con los que vamos a trabajar
+DECLARE pX INT;
+DECLARE pT INT;
+DECLARE pA INT;
+DECLARE pY INT;
+
+#Estas son las variables del programa
+DECLARE FLAG BOOL DEFAULT 0;
+DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET FLAG=1;
+DECLARE CONTINUE HANDLER FOR SQLWARNING SET FLAG=1;
+
+#INICIAMOS EL BUCLE
+REPEAT
+	SET FLAG =0;
+	START TRANSACTION;
+    ##########################
+    #READ(X)
+	SELECT * FROM variables WHERE name='X' FOR SHARE;
+	SELECT value INTO pX FROM variables WHERE name='X';
+	
+	#X=X+1
+	SELECT pX+1 INTO pX;
+	
+	#WRITE(X)
+	SELECT * FROM variables WHERE name='X' FOR UPDATE;
+	UPDATE variables SET value=pX WHERE name='X';
+	
+	#READ(T)
+	SELECT * FROM variables WHERE name='T' FOR SHARE;
+	SELECT value INTO pT FROM variables WHERE name='T';
+	
+	#READ(A)
+	SELECT * FROM variables WHERE name='A' FOR SHARE;
+	SELECT value INTO pA FROM variables WHERE name='A';
+	
+	#READ(Y)
+	SELECT * FROM variables WHERE name='Y' FOR SHARE;
+	SELECT value INTO pY FROM variables WHERE name='Y';
+	
+	#T=T+Y
+	SELECT pT+pY INTO pT;
+	
+	#A=A+Y
+	SELECT pA+pY INTO pA;
+	
+	#WRITE(T)
+	SELECT * FROM variables WHERE name='T' FOR UPDATE;
+	UPDATE variables SET value=pT WHERE name='T';
+	
+	#WRITE(A)
+	SELECT * FROM variables WHERE name='A' FOR UPDATE;
+	UPDATE variables SET value=pA WHERE name='A';
+    ##########################
+	IF FLAG THEN
+		ROLLBACK;
+	ELSE
+		COMMIT;
+	END IF;
+UNTIL NOT FLAG END REPEAT;
+END
+==========================================================
+#PROCEDURE B
+
+BEGIN
+#Parametros con los que vamos a trabajar
+DECLARE pY INT;
+DECLARE pT INT;
+DECLARE pB INT;
+DECLARE pZ INT;
+
+#Estas son las variables del programa
+DECLARE FLAG BOOL DEFAULT 0;
+DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET FLAG=1;
+DECLARE CONTINUE HANDLER FOR SQLWARNING SET FLAG=1;
+
+#INICIAMOS EL BUCLE
+REPEAT
+	SET FLAG =0;
+	START TRANSACTION;
+    ##########################
+    #READ(Y)
+	SELECT * FROM variables WHERE name='Y' FOR SHARE;
+	SELECT value INTO pY FROM variables WHERE name='Y';
+	
+	#Y=Y+1
+	SELECT pY +1 INTO pY;
+	
+	#WRITE(Y)
+	SELECT * FROM variables WHERE name='Y' FOR UPDATE;
+	UPDATE variables SET value=pY WHERE name='Y';
+	
+	#READ(T)
+	SELECT * FROM variables WHERE name='T' FOR SHARE;
+	SELECT value INTO pT FROM variables WHERE name='T';
+	
+	#READ(B)
+	SELECT * FROM variables WHERE name='B' FOR SHARE;
+	SELECT value INTO pB FROM variables WHERE name='B';
+	
+	#READ(Z)
+	SELECT * FROM variables WHERE name='Z' FOR SHARE;
+	SELECT value INTO pZ FROM variables WHERE name='Z';
+	
+	#T=T+Z
+	SELECT pT+pZ INTO pT;
+	
+	#B=B+Z
+	SELECT pB+pZ INTO pB;
+	
+	#WRITE(T)
+	SELECT * FROM variables WHERE name='T' FOR UPDATE;
+	UPDATE variables SET value=pT WHERE name='T';
+	
+	#WRITE(B)
+	SELECT * FROM variables WHERE name='B' FOR UPDATE;
+	UPDATE variables SET value=pB WHERE name='B';
+    ##########################
+	IF FLAG THEN
+		ROLLBACK;
+	ELSE
+		COMMIT;
+	END IF;
+UNTIL NOT FLAG END REPEAT;
+END
+==========================================================
+#PROCEDURE C
+
+BEGIN
+#Parametros con los que vamos a trabajar
+DECLARE pZ INT;
+DECLARE pT INT;
+DECLARE pC INT;
+DECLARE pX INT;
+
+#Estas son las variables del programa
+DECLARE FLAG BOOL DEFAULT 0;
+DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET FLAG=1;
+DECLARE CONTINUE HANDLER FOR SQLWARNING SET FLAG=1;
+
+#INICIAMOS EL BUCLE
+REPEAT
+	SET FLAG =0;
+	START TRANSACTION;
+    ##########################
+    #READ(Z)
+	SELECT * FROM variables WHERE name='Z' FOR SHARE;
+	SELECT value INTO pZ FROM variables WHERE name='Z';
+	
+	#Z=Z+1
+	SELECT pZ+1 INTO pZ;
+	
+	#WRITE(Z)
+	SELECT * FROM variables WHERE name='Z' FOR UPDATE;
+	UPDATE variables SET value=pZ WHERE name='Z';
+	
+	#READ(T)
+	SELECT * FROM variables WHERE name='T' FOR SHARE;
+	SELECT value INTO pT FROM variables WHERE name='T';
+	
+	#READ(C)
+	SELECT * FROM variables WHERE name='C' FOR SHARE;
+	SELECT value INTO pC FROM variables WHERE name='C';
+	
+	#READ(X)
+	SELECT * FROM variables WHERE name='X' FOR SHARE;
+	SELECT value INTO pX FROM variables WHERE name='X';
+	
+	#T=T+X
+	SELECT pT+pX INTO pT;
+	
+	#C=C+X
+	SELECT pC+pX INTO pC;
+	
+	#WRITE(T)
+	SELECT * FROM variables WHERE name='T' FOR UPDATE;
+	UPDATE variables SET value=pT WHERE name='T';
+	
+	#WRITE(C)
+	SELECT * FROM variables WHERE name='C' FOR UPDATE;
+	UPDATE variables SET value=pC WHERE name='C';
+    ##########################
+	IF FLAG THEN
+		ROLLBACK;
+	ELSE
+		COMMIT;
+	END IF;
+UNTIL NOT FLAG END REPEAT;
+END
+==========================================================
+#PROCEDURE D 
+
+BEGIN
+#Parametros con los que vamos a trabajar
+DECLARE pT INT;
+DECLARE pD INT;
+DECLARE pZ INT;
+DECLARE pX INT;
+
+#Estas son las variables del programa
+DECLARE FLAG BOOL DEFAULT 0;
+DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET FLAG=1;
+DECLARE CONTINUE HANDLER FOR SQLWARNING SET FLAG=1;
+
+#INICIAMOS EL BUCLE
+REPEAT
+	SET FLAG =0;
+	START TRANSACTION;
+    ##########################
+	#READ(T)
+	SELECT * FROM variables WHERE name='T' FOR SHARE;
+	SELECT value INTO pT FROM variables WHERE name='T';
+	
+	#READ(D)
+	SELECT * FROM variables WHERE name='D' FOR SHARE;
+	SELECT value INTO pD FROM variables WHERE name='D';
+	
+	#READ(Z)
+	SELECT * FROM variables WHERE name='Z' FOR SHARE;
+	SELECT value INTO pZ FROM variables WHERE name='Z';
+	
+	#T=T+Z
+	SELECT pT+pZ INTO pT;
+	
+	#D=D+Z 
+	SELECT pD+pZ INTO pD;
+	
+	#WRITE(T)
+	SELECT * FROM variables WHERE name='T' FOR UPDATE;
+	UPDATE variables SET value=pT WHERE name='T';
+	
+	#WRITE(D)
+	SELECT * FROM variables WHERE name='D' FOR UPDATE;
+	UPDATE variables SET value=pD WHERE name='D';
+	
+	#READ(X)
+	SELECT * FROM variables WHERE name='X' FOR SHARE;
+	SELECT value INTO pX FROM variables WHERE name='X';
+	
+	#X=X-1
+	SELECT pX-1 INTO pX;
+	
+	#WRITE(X)
+	SELECT * FROM variables WHERE name='X' FOR UPDATE;
+	UPDATE variables SET value=pX WHERE name='X';
+	##########################
+	IF FLAG THEN
+		ROLLBACK;
+	ELSE
+		COMMIT;
+	END IF;
+UNTIL NOT FLAG END REPEAT;
+END
+==========================================================
+#PROCEDURE E 
+
+BEGIN
+#Parametros con los que vamos a trabajar
+DECLARE pT INT;
+DECLARE pE INT;
+DECLARE pX INT;
+DECLARE pY INT;
+
+#Estas son las variables del programa
+DECLARE FLAG BOOL DEFAULT 0;
+DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET FLAG=1;
+DECLARE CONTINUE HANDLER FOR SQLWARNING SET FLAG=1;
+
+#INICIAMOS EL BUCLE
+REPEAT
+	SET FLAG =0;
+	START TRANSACTION;
+    ##########################
+	#READ(T)
+	SELECT * FROM variables WHERE name='T' FOR SHARE;
+	SELECT value INTO pT FROM variables WHERE name='T';
+	
+	#READ(E)
+	SELECT * FROM variables WHERE name='E' FOR SHARE;
+	SELECT value INTO pE FROM variables WHERE name='E';
+	
+	#READ(X)
+	SELECT * FROM variables WHERE name='X' FOR SHARE;
+	SELECT value INTO pX FROM variables WHERE name='X';
+	
+	#T=T+X
+	SELECT pT+pX INTO pT;
+	
+	#E=E+X 
+	SELECT pE+pX INTO pE;
+	
+	#WRITE(T)
+	SELECT * FROM variables WHERE name='T' FOR UPDATE;
+	UPDATE variables SET value=pT WHERE name='T';
+	
+	#WRITE(E)
+	SELECT * FROM variables WHERE name='E' FOR UPDATE;
+	UPDATE variables SET value=pE WHERE name='E';
+	
+	#READ(Y)
+	SELECT * FROM variables WHERE name='Y' FOR SHARE;
+	SELECT value INTO pY FROM variables WHERE name='Y';
+	
+	#Y=Y-1
+	SELECT pY-1 INTO pY;
+	
+	#WRITE(Y)
+	SELECT * FROM variables WHERE name='Y' FOR UPDATE;
+	UPDATE variables SET value=pY WHERE name='Y';
+	##########################
+	IF FLAG THEN
+		ROLLBACK;
+	ELSE
+		COMMIT;
+	END IF;
+UNTIL NOT FLAG END REPEAT;
+END
+==========================================================
+#PROCEDURE F 
+
+BEGIN
+#Parametros con los que vamos a trabajar
+DECLARE pT INT;
+DECLARE pF INT;
+DECLARE pY INT;
+DECLARE pZ INT;
+
+#Estas son las variables del programa
+DECLARE FLAG BOOL DEFAULT 0;
+DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET FLAG=1;
+DECLARE CONTINUE HANDLER FOR SQLWARNING SET FLAG=1;
+
+#INICIAMOS EL BUCLE
+REPEAT
+	SET FLAG =0;
+	START TRANSACTION;
+    ##########################
+	#READ(T)
+	SELECT * FROM variables WHERE name='T' FOR SHARE;
+	SELECT value INTO pT FROM variables WHERE name='T';
+	
+	#READ(F)
+	SELECT * FROM variables WHERE name='F' FOR SHARE;
+	SELECT value INTO pF FROM variables WHERE name='F';
+	
+	#READ(Y)
+	SELECT * FROM variables WHERE name='Y' FOR SHARE;
+	SELECT value INTO pY FROM variables WHERE name='Y';
+	
+	#T=T+Y
+	SELECT pT+pY INTO pT;
+	
+	#F=F+Y 
+	SELECT pF+pY INTO pF;
+	
+	#WRITE(T)
+	SELECT * FROM variables WHERE name='T' FOR UPDATE;
+	UPDATE variables SET value=pT WHERE name='T';
+	
+	#WRITE(F)
+	SELECT * FROM variables WHERE name='F' FOR UPDATE;
+	UPDATE variables SET value=pF WHERE name='F';
+	
+	#READ(Z)
+	SELECT * FROM variables WHERE name='Z' FOR SHARE;
+	SELECT value INTO pZ FROM variables WHERE name='Z';
+	
+	#Z=Z-1
+	SELECT pZ-1 INTO pZ;
+	
+	#WRITE(Z)
+	SELECT * FROM variables WHERE name='Z' FOR UPDATE;
+	UPDATE variables SET value=pZ WHERE name='Z';
+	##########################
+	IF FLAG THEN
+		ROLLBACK;
+	ELSE
+		COMMIT;
+	END IF;
+UNTIL NOT FLAG END REPEAT;
+END

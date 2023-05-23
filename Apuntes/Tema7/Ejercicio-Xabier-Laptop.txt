@@ -1,0 +1,163 @@
+Ejercicio 1
+=============================================================================================================================================================================
+* Crear las colecciones
+cine> db.peliculas.insertMany([ { nombre: "Her", anno: 2013 }, { nombre: "Joker", anno: 2019 }, { nombre: "Judy", anno: 2019 }])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId("64464e4041f3ec2587f797e6"),
+    '1': ObjectId("64464e4041f3ec2587f797e7"),
+    '2': ObjectId("64464e4041f3ec2587f797e8")
+  }
+}
+
+cine> db.actores.insertMany([{nombre:"Joaquin Phoenix", edad:12},{nombre:"Renee Zellweger", edad:53},{nombre:"Keanu Reeves", edad:58}])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId("64464ed641f3ec2587f797e9"),
+    '1': ObjectId("64464ed641f3ec2587f797ea"),
+    '2': ObjectId("64464ed641f3ec2587f797eb")
+  }
+}
+
+*Modificar la edad de Joaquin Phoenix a 48 años.
+cine> db.actores.updateOne({nombre:"Joaquin Phoenix"}, {$set: {edad:48}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+*Eliminar a Keanu Reeves de la coleccion "actores".
+cine> db.actores.deleteOne({nombre:"Keanu Reeves"})
+{ acknowledged: true, deletedCount: 1 }
+
+*Añadir el siguiente documento a la coleccion "peliculas":
+cine> db.peliculas.insertOne({nombre:"Avatar",anno:2009,nota:7.2})
+{
+  acknowledged: true,
+  insertedId: ObjectId("6446510a41f3ec2587f797ec")
+}
+
+*Mostrar unicamente a los nombres de las peliculas estrenadas a partir de 2015
+cine> db.peliculas.find({anno: {$gte: 2015}}, {nombre:1, _id:0})
+[ { nombre: 'Joker' }, { nombre: 'Judy' } ]
+=============================================================================================================================================================================
+Ejercicio 2
+=============================================================================================================================================================================
+cine> db.actores.updateOne({nombre:"Renee Zellweger"},{$set: {premios:[{nombre:"Oscar a la mejor actriz",anno:2020},{nombre:"Globo de oro a la mejor actriz", anno:2020}]}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+cine> db.actores.updateOne({nombre:"Joaquin Phoenix"},{$set: {premios:[{nombre:"Oscar al mejor actor",anno:2020}]}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+cine> db.actores.updateOne({nombre:"Joaquin Phoenix"},{$set:{participa:[{pelicula:"Her"},{pelicula:"Joker"}]}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+cine> db.actores.updateOne({nombre:"Renee Zellweger"},{$set:{participa:[{pelicula:"Judy"}]}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+cine> db.actores.aggregate([{ $lookup: {from:"peliculas", localField:"nombre", foreignField:"pelicula" ,as: "DatosPelis"}}])
+=============================================================================================================================================================================
+Ejercicio 3
+=============================================================================================================================================================================
+cine> db.createCollection("salas", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: [ "nombre", "poblacion", "capacidad" ],
+      properties: {
+        nombre: { bsonType: "string" },
+        poblacion: { bsonType: "string" },
+        capacidad: { bsonType: "int", minimum: 150 }
+      }
+    }
+  },
+  validationLevel: 'moderate',
+  validationAction: 'error'
+})
+
+cine> db.salas.insertMany([
+{nombre:"Yelmo Megapark", poblacion:"Barakaldo", capacidad:500},
+{nombre:"Autocine", poblacion:"Getxo", capacidad:100},
+{nombre:"Zubiarte", poblacion:"Bilbao", capacidad:250}])
+Uncaught:
+MongoBulkWriteError: Document failed validation
+Result: BulkWriteResult {
+  insertedCount: 1,
+  matchedCount: 0,
+  modifiedCount: 0,
+  deletedCount: 0,
+  upsertedCount: 0,
+  upsertedIds: {},
+  insertedIds: {
+    '0': ObjectId("6446c80c814748cb348374cf"),
+    '1': ObjectId("6446c80c814748cb348374d0"),
+    '2': ObjectId("6446c80c814748cb348374d1")
+  }
+}
+Write Errors: [
+  WriteError {
+    err: {
+      index: 1,
+      code: 121,
+      errmsg: 'Document failed validation',
+      errInfo: {
+        failingDocumentId: ObjectId("6446c80c814748cb348374d0"),
+        details: {
+          operatorName: '$jsonSchema',
+          schemaRulesNotSatisfied: [
+            {
+              operatorName: 'properties',
+              propertiesNotSatisfied: [Array]
+            }
+          ]
+        }
+      },
+      op: {
+        nombre: 'Autocine',
+        poblacion: 'Getxo',
+        capacidad: 100,
+        _id: ObjectId("6446c80c814748cb348374d0")
+      }
+    }
+  }
+]
+cine> db.salas.find()
+[
+  {
+    _id: ObjectId("6446c80c814748cb348374cf"),
+    nombre: 'Yelmo Megapark',
+    poblacion: 'Barakaldo',
+    capacidad: 500
+  }
+]
+=============================================================================================================================================================================
+
